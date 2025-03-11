@@ -3,6 +3,7 @@
     "target": "es2017",
     "module": "commonjs",
     "lib": ["es2017", "dom"],
+    "types": ["node"],
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
@@ -10,6 +11,9 @@
     "strict": false,
     "moduleResolution": "node",
     "baseUrl": "./",
+    "paths": {
+      "*": ["node_modules/*"]
+    },
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

@@ -8,10 +8,8 @@
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import * as cheerio from 'cheerio';
 import { config } from 'dotenv';
-import { env } from 'process';
+import * as cheerio from 'cheerio';
 
 // Initialize environment variables
 config();
