@@ -5,10 +5,12 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  actions: write
 
 jobs:
   build:
@@ -100,6 +102,15 @@ jobs:
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
           </body>
           </html>' > docs/index.html
+      
+      # Manually enable GitHub Pages in repository settings
+      - name: Enable GitHub Pages
+        run: |
+          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          gh api --method POST /repos/${{ github.repository }}/pages \
+            -f build_type="workflow" \
+            -f source="gh-pages"
+        continue-on-error: true
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
