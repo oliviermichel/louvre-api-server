@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/louvre-api-server.js",
     "dev": "ts-node src/louvre-api-server.ts",
-    "postinstall": "npm install"
+    "install": "if [ -z \"$CI\" ]; then npm install; fi"
   },
   "keywords": [
     "louvre",
