@@ -10,12 +10,14 @@ import axios from 'axios';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import * as cheerio from 'cheerio';
+import { config } from 'dotenv';
+import { env } from 'process';
 
 // Initialize environment variables
-dotenv.config();
+config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
