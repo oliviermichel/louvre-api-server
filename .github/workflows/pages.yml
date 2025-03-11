@@ -1,0 +1,183 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Create API documentation
+        run: |
+          mkdir -p docs
+          cat > docs/index.html << 'EOL'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Louvre API Server Documentation</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+              body { padding-top: 2rem; }
+              .endpoint { margin-bottom: 2rem; padding: 1rem; border-radius: 5px; background-color: #f8f9fa; }
+              .method { font-weight: bold; color: #0d6efd; }
+              pre { background-color: #f1f1f1; padding: 1rem; border-radius: 5px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Louvre API Server Documentation</h1>
+              <p class="lead">A Node.js API server that provides access to artwork data from the Louvre Museum collection.</p>
+              
+              <h2 class="mt-4">API Endpoints</h2>
+              
+              <div class="endpoint">
+                <h3><span class="method">GET</span> /api/search_artwork</h3>
+                <p>Search for artwork in the Louvre collection.</p>
+                <h4>Query Parameters:</h4>
+                <ul>
+                  <li><code>query</code> (required): Search term</li>
+                  <li><code>page</code> (optional): Page number for pagination (default: 1)</li>
+                </ul>
+                <h4>Example Response:</h4>
+                <pre><code>{
+  "query": "mona lisa",
+  "page": 1,
+  "totalResults": 42,
+  "totalPages": 3,
+  "artworks": [
+    {
+      "id": "portrait-de-monna-lisa-la-joconde",
+      "title": "Portrait de Monna Lisa, la Joconde",
+      "author": "VINCI Léonard de",
+      "imageUrl": "https://collections.louvre.fr/media/cache/resolve/medium/ark:/53355/cl010066723",
+      "url": "https://collections.louvre.fr/ark:/53355/cl010066723"
+    }
+  ],
+  "nextPage": 2,
+  "prevPage": null
+}</code></pre>
+              </div>
+              
+              <div class="endpoint">
+                <h3><span class="method">GET</span> /api/get_artwork_details/:id</h3>
+                <p>Get detailed information about a specific artwork.</p>
+                <h4>Path Parameters:</h4>
+                <ul>
+                  <li><code>id</code> (required): Artwork ID</li>
+                </ul>
+                <h4>Example Response:</h4>
+                <pre><code>{
+  "id": "portrait-de-monna-lisa-la-joconde",
+  "title": "Portrait de Monna Lisa, la Joconde",
+  "artist": "VINCI Léonard de",
+  "date": "Entre 1503 et 1506",
+  "medium": "Huile sur panneau de bois de peuplier",
+  "dimensions": "77 × 53 cm",
+  "location": "Musée du Louvre, Paris, France",
+  "description": "...",
+  "images": [...]
+}</code></pre>
+              </div>
+              
+              <div class="endpoint">
+                <h3><span class="method">GET</span> /api/get_artwork_image/:id</h3>
+                <p>Get images for an artwork organized by type.</p>
+                <h4>Path Parameters:</h4>
+                <ul>
+                  <li><code>id</code> (required): Artwork ID</li>
+                </ul>
+                <h4>Query Parameters:</h4>
+                <ul>
+                  <li><code>type</code> (optional): Image type to filter by</li>
+                  <li><code>position</code> (optional): Specific image position to retrieve</li>
+                </ul>
+                <h4>Example Response:</h4>
+                <pre><code>{
+  "artworkTitle": "Portrait de Monna Lisa, la Joconde",
+  "images": {
+    "face": [
+      {
+        "url": "https://collections.louvre.fr/...",
+        "position": 1,
+        "type": "face"
+      }
+    ],
+    "détail": [
+      {
+        "url": "https://collections.louvre.fr/...",
+        "position": 1,
+        "type": "détail"
+      }
+    ]
+  },
+  "selectedType": null,
+  "availableTypes": ["face", "détail"],
+  "totalImages": 5
+}</code></pre>
+              </div>
+              
+              <div class="endpoint">
+                <h3><span class="method">GET</span> /api/get_artist_timeline</h3>
+                <p>Get a chronological timeline of an artist's works.</p>
+                <h4>Query Parameters:</h4>
+                <ul>
+                  <li><code>artist</code> (required): Artist name</li>
+                  <li><code>sortBy</code> (optional): Sort method ('date' or 'popularity', default: 'date')</li>
+                </ul>
+                <h4>Example Response:</h4>
+                <pre><code>{
+  "artist": "picasso",
+  "total_works": 42,
+  "timeline": {
+    "chronological": [...],
+    "by_decade": {
+      "1900-1909": [...],
+      "1910-1919": [...]
+    }
+  },
+  "earliest_work": {...},
+  "latest_work": {...}
+}</code></pre>
+              </div>
+              
+              <footer class="mt-5 pt-3 border-top text-muted">
+                <p>Louvre API Server - <a href="https://github.com/${{ github.repository }}">GitHub Repository</a></p>
+              </footer>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+          </body>
+          </html>
+          EOL
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: 'docs'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2 
