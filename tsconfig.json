@@ -3,22 +3,18 @@
     "target": "es2017",
     "module": "commonjs",
     "lib": ["es2017", "dom"],
-    "types": ["node"],
-    "declaration": true,
-    "sourceMap": true,
+    "types": ["node", "express"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": false,
-    "moduleResolution": "node",
-    "baseUrl": "./",
-    "paths": {
-      "*": ["node_modules/*"]
-    },
+    "noImplicitAny": false,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

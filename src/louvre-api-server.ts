@@ -5,7 +5,7 @@
  * information, high-resolution images, and user collections.
  */
 
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router, NextFunction } from 'express';
 import axios from 'axios';
 import cors from 'cors';
 import { config } from 'dotenv';
@@ -15,6 +15,7 @@ import * as cheerio from 'cheerio';
 config();
 
 const app = express();
+const router = Router();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -24,6 +25,9 @@ app.use(cors());
 // Constants
 const BASE_URL = 'https://collections.louvre.fr';
 const API_URL = `ark:/53355`;
+
+// Define route handler types
+type ExpressHandler = (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
 
 /**
  * Helper function to make API requests
@@ -116,16 +120,17 @@ function groupByDecade(artworks: any[]): Record<string, any[]> {
 /**
  * Search for artwork on the Louvre website
  */
-app.get('/api/search_artwork', async (req: Request, res: Response) => {
+const searchArtwork: ExpressHandler = async (req, res) => {
   try {
     const { query, page = 1 } = req.query;
     
     if (!query) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Search query is required',
       });
+      return;
     }
-    
+
     // Format the query for URL
     const formattedQuery = encodeURIComponent(query as string);
     const searchUrl = `https://collections.louvre.fr/recherche?page=${page}&q=${formattedQuery}`;
@@ -192,11 +197,9 @@ app.get('/api/search_artwork', async (req: Request, res: Response) => {
       details: (error as Error).message || 'Unknown error',
     });
   }
-});
-/**
- * Get detailed information about a specific artwork
- */
-app.get('/api/get_artwork_details/:id', async (req: Request, res: Response) => {
+};
+
+const getArtworkDetails: ExpressHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const response = await fetchLouvreAPI(`/${API_URL}/${id}`);
@@ -216,12 +219,9 @@ app.get('/api/get_artwork_details/:id', async (req: Request, res: Response) => {
       details: (error as Error).message || 'Unknown error',
     });
   }
-});
+};
 
-/**
- * Get images for a specific artwork
- */
-app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
+const getArtworkImage: ExpressHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { type = 'all', position } = req.query;
@@ -230,9 +230,10 @@ app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
     const artworkDetails = await fetchLouvreAPI(`/${API_URL}/${id}`);
     
     if (!artworkDetails.image || artworkDetails.image.length === 0) {
-      return res.status(404).json({
+      res.status(404).json({
         error: 'No images available for this artwork',
       });
+      return;
     }
     
     // If a specific position is requested, return just that image
@@ -241,17 +242,19 @@ app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
       const specificImage = artworkDetails.image.find((img: any) => img.position === positionNum);
       
       if (!specificImage) {
-        return res.status(404).json({
+        res.status(404).json({
           error: `No image found with position ${position}`,
         });
+        return;
       }
       
-      return res.json({
+      res.json({
         id: id,
         artworkTitle: artworkDetails.title,
         image: specificImage,
         position: positionNum
       });
+      return;
     }
     
     // Group images by type
@@ -271,7 +274,7 @@ app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
     
     // If type is 'all', return all images
     if (type === 'all') {
-      return res.json({
+      res.json({
         id: id,
         artworkTitle: artworkDetails.title,
         images: artworkDetails.image,
@@ -279,6 +282,7 @@ app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
         availableTypes: availableTypes,
         totalImages: artworkDetails.image.length
       });
+      return;
     }
     
     // If requested type doesn't exist, use the first available type
@@ -307,19 +311,20 @@ app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
       details: (error as Error).message || 'Unknown error',
     });
   }
-});
+};
 
 /**
  * Generate a chronological timeline of an artist's works
  */
-app.get('/api/get_artist_timeline', async (req: Request, res: Response) => {
+const getArtistTimeline: ExpressHandler = async (req, res) => {
   try {
     const { artist, sortBy = 'date' } = req.query;
     
     if (!artist) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Artist parameter is required',
       });
+      return;
     }
     
     // Format the search URL using the advanced search with authorStr parameter
@@ -408,18 +413,25 @@ app.get('/api/get_artist_timeline', async (req: Request, res: Response) => {
       details: (error as Error).message || 'Unknown error',
     });
   }
-});
+};
 
-/**
- * Health check endpoint for monitoring
- */
-app.get('/api/health', (req: Request, res: Response) => {
+const healthCheck: ExpressHandler = (req, res) => {
   res.status(200).json({
     status: 'ok',
     uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });
-});
+};
+
+// Mount routes
+router.get('/api/search_artwork', searchArtwork);
+router.get('/api/get_artwork_details/:id', getArtworkDetails);
+router.get('/api/get_artwork_image/:id', getArtworkImage);
+router.get('/api/get_artist_timeline', getArtistTimeline);
+router.get('/api/health', healthCheck);
+
+// Mount all routes
+app.use(router);
 
 // Start server
 app.listen(PORT, () => {
