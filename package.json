@@ -28,7 +28,7 @@
     "@types/cheerio": "^0.22.35",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/node": "^18.18.0",
+    "@types/node": "^18.19.80",
     "jest": "^29.7.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.8.2"
