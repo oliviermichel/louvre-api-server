@@ -10,9 +10,9 @@ permissions:
   contents: write
   pages: write
   id-token: write
-  actions: write
 
 jobs:
+  # Build job
   build:
     runs-on: ubuntu-latest
     steps:
@@ -103,25 +103,22 @@ jobs:
           </body>
           </html>' > docs/index.html
       
-      # Manually enable GitHub Pages in repository settings
-      - name: Enable GitHub Pages
-        run: |
-          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-          gh api --method POST /repos/${{ github.repository }}/pages \
-            -f build_type="workflow" \
-            -f source="gh-pages"
-        continue-on-error: true
-      
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        with:
-          enablement: true
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs'
-      
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4 
