@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -29,8 +29,7 @@ jobs:
       - name: Create API documentation
         run: |
           mkdir -p docs
-          cat > docs/index.html << 'EOL'
-          <!DOCTYPE html>
+          echo '<!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
@@ -59,24 +58,6 @@ jobs:
                   <li><code>query</code> (required): Search term</li>
                   <li><code>page</code> (optional): Page number for pagination (default: 1)</li>
                 </ul>
-                <h4>Example Response:</h4>
-                <pre><code>{
-  "query": "mona lisa",
-  "page": 1,
-  "totalResults": 42,
-  "totalPages": 3,
-  "artworks": [
-    {
-      "id": "portrait-de-monna-lisa-la-joconde",
-      "title": "Portrait de Monna Lisa, la Joconde",
-      "author": "VINCI Léonard de",
-      "imageUrl": "https://collections.louvre.fr/media/cache/resolve/medium/ark:/53355/cl010066723",
-      "url": "https://collections.louvre.fr/ark:/53355/cl010066723"
-    }
-  ],
-  "nextPage": 2,
-  "prevPage": null
-}</code></pre>
               </div>
               
               <div class="endpoint">
@@ -86,18 +67,6 @@ jobs:
                 <ul>
                   <li><code>id</code> (required): Artwork ID</li>
                 </ul>
-                <h4>Example Response:</h4>
-                <pre><code>{
-  "id": "portrait-de-monna-lisa-la-joconde",
-  "title": "Portrait de Monna Lisa, la Joconde",
-  "artist": "VINCI Léonard de",
-  "date": "Entre 1503 et 1506",
-  "medium": "Huile sur panneau de bois de peuplier",
-  "dimensions": "77 × 53 cm",
-  "location": "Musée du Louvre, Paris, France",
-  "description": "...",
-  "images": [...]
-}</code></pre>
               </div>
               
               <div class="endpoint">
@@ -112,53 +81,16 @@ jobs:
                   <li><code>type</code> (optional): Image type to filter by</li>
                   <li><code>position</code> (optional): Specific image position to retrieve</li>
                 </ul>
-                <h4>Example Response:</h4>
-                <pre><code>{
-  "artworkTitle": "Portrait de Monna Lisa, la Joconde",
-  "images": {
-    "face": [
-      {
-        "url": "https://collections.louvre.fr/...",
-        "position": 1,
-        "type": "face"
-      }
-    ],
-    "détail": [
-      {
-        "url": "https://collections.louvre.fr/...",
-        "position": 1,
-        "type": "détail"
-      }
-    ]
-  },
-  "selectedType": null,
-  "availableTypes": ["face", "détail"],
-  "totalImages": 5
-}</code></pre>
               </div>
               
               <div class="endpoint">
                 <h3><span class="method">GET</span> /api/get_artist_timeline</h3>
-                <p>Get a chronological timeline of an artist's works.</p>
+                <p>Get a chronological timeline of an artist works.</p>
                 <h4>Query Parameters:</h4>
                 <ul>
                   <li><code>artist</code> (required): Artist name</li>
-                  <li><code>sortBy</code> (optional): Sort method ('date' or 'popularity', default: 'date')</li>
+                  <li><code>sortBy</code> (optional): Sort method (date or popularity, default: date)</li>
                 </ul>
-                <h4>Example Response:</h4>
-                <pre><code>{
-  "artist": "picasso",
-  "total_works": 42,
-  "timeline": {
-    "chronological": [...],
-    "by_decade": {
-      "1900-1909": [...],
-      "1910-1919": [...]
-    }
-  },
-  "earliest_work": {...},
-  "latest_work": {...}
-}</code></pre>
               </div>
               
               <footer class="mt-5 pt-3 border-top text-muted">
@@ -167,17 +99,16 @@ jobs:
             </div>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
           </body>
-          </html>
-          EOL
+          </html>' > docs/index.html
       
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4
       
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs'
       
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2 
+        uses: actions/deploy-pages@v4 
