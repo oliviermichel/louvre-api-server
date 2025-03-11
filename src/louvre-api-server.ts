@@ -5,7 +5,7 @@
  * information, high-resolution images, and user collections.
  */
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import axios from 'axios';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -116,7 +116,7 @@ function groupByDecade(artworks: any[]): Record<string, any[]> {
 /**
  * Search for artwork on the Louvre website
  */
-app.get('/api/search_artwork', async (req, res) => {
+app.get('/api/search_artwork', async (req: Request, res: Response) => {
   try {
     const { query, page = 1 } = req.query;
     
@@ -143,7 +143,7 @@ app.get('/api/search_artwork', async (req, res) => {
     const artworks: any[] = [];
     
     // Find all artwork cards
-    $('#search__grid .card__outer').each((index: number, element: cheerio.Element) => {
+    $('#search__grid .card__outer').each((index: number, element: any) => {
       // Extract the URL and ID
       const linkElement = $(element).find('a').first();
       const url = linkElement.attr('href');
@@ -196,7 +196,7 @@ app.get('/api/search_artwork', async (req, res) => {
 /**
  * Get detailed information about a specific artwork
  */
-app.get('/api/get_artwork_details/:id', async (req, res) => {
+app.get('/api/get_artwork_details/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const response = await fetchLouvreAPI(`/${API_URL}/${id}`);
@@ -221,7 +221,7 @@ app.get('/api/get_artwork_details/:id', async (req, res) => {
 /**
  * Get images for a specific artwork
  */
-app.get('/api/get_artwork_image/:id', async (req, res) => {
+app.get('/api/get_artwork_image/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { type = 'all', position } = req.query;
@@ -312,7 +312,7 @@ app.get('/api/get_artwork_image/:id', async (req, res) => {
 /**
  * Generate a chronological timeline of an artist's works
  */
-app.get('/api/get_artist_timeline', async (req, res) => {
+app.get('/api/get_artist_timeline', async (req: Request, res: Response) => {
   try {
     const { artist, sortBy = 'date' } = req.query;
     
@@ -338,7 +338,7 @@ app.get('/api/get_artist_timeline', async (req, res) => {
     const artworks: any[] = [];
     
     // Find all artwork cards
-    $('#search__grid .card__outer').each((index: number, element: cheerio.Element) => {
+    $('#search__grid .card__outer').each((index: number, element: any) => {
       // Extract the URL and ID
       const linkElement = $(element).find('a').first();
       const url = linkElement.attr('href');
@@ -413,7 +413,7 @@ app.get('/api/get_artist_timeline', async (req, res) => {
 /**
  * Health check endpoint for monitoring
  */
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     uptime: process.uptime(),
